@@ -1,2 +1,14 @@
-.DS_Store
+# --- Data Files (CRITICAL to block massive Kaggle uploads) ---
 data/
+
+# --- Python & Environment Artifacts ---
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+venv/
+.venv/
+env/
+
+# --- macOS System Garbage ---
+.DS_Store
