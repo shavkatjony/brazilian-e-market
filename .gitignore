@@ -1,5 +1,5 @@
 # --- Data Files (CRITICAL to block massive Kaggle uploads) ---
-data/
+/data/
 
 # --- Python & Environment Artifacts ---
 __pycache__/
