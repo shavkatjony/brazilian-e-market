@@ -2,7 +2,7 @@
 
 **Analyst:** Shavkatjon Yuldashev
 **Data:** Olist Brazilian E-Commerce Public Dataset (Sept 2016 – Oct 2018, ~99K orders)
-**Method:** SQL extraction (SQLite) + Python analysis (pandas, matplotlib). Full workflow in `notebooks/analysis.ipynb`; queries in `sql/`.
+**Method:** SQL extraction (SQLite) + Python analysis (pandas, matplotlib) + a live interactive dashboard (https://shavkatjony.github.io/brazilian-e-market/). Full workflow in `notebooks/analysis.ipynb`; queries in `sql/`.
 
 ---
 
@@ -23,7 +23,7 @@ operations detail — it is the retention strategy.
 **The three highest-impact findings:**
 1. Only 3.12% of customers return; 70.7% of the customer base is already At Risk or Churned.
 2. Late delivery drives satisfaction down sharply — a 2.56-star swing from on-time to 8+ days late.
-3. Delivery speed is severely uneven by region — the slowest states take 2–2.3× the national average.
+3. Broken delivery promises, not distance, track reviews by state: the on-time rate correlates with average review at r = 0.78; Rio de Janeiro and the Northeast miss the most promises.
 
 ---
 
@@ -98,23 +98,25 @@ satisfaction.
 
 ---
 
-## Finding 3 — Revenue is spread across many sellers, not a concentrated few
+## Finding 3 — No seller dominates, but revenue follows an 80/20 pattern
 
-**What the data shows:** The top seller earns **R$ 226,988** in item revenue,
-and the top 15 sellers range down to R$ 111,127. But the top 15 combined
-(**R$ 2.33M**) account for only **~14.6% of total payments**, and the single
-largest seller is just **1.4%** of GMV.
+**What the data shows:** On orders that were not canceled or unavailable, item
+revenue totals **R$ 13.49M**. The largest seller makes **R$ 229,238 (1.7%)**
+and the top 15 together make **R$ 2.37M (17.6%)**. The full concentration curve
+shows **540 of 3,053 sellers (17.7%) make 80% of item revenue**.
 
 ![Top 15 sellers by item revenue](figures/seller_revenue.png)
 
-**Why it matters:** Unlike many marketplaces, Olist's revenue is *not*
-dangerously concentrated in a handful of sellers — the long tail carries real
-weight. This is a resilience strength (no single seller's departure is
-catastrophic), but it also means seller-support programs must scale across a
-broad base rather than focusing on a small VIP tier.
+**Why it matters:** No single seller's departure is catastrophic, but the
+business does depend on a top group of roughly 540 sellers. Seller support and
+quality checks should start there, not spread evenly across the long tail.
 
-**Confidence:** Medium-High — the top-15 view is exact; the "long tail carries
-the rest" conclusion is inferred from the top 15 covering only ~15% of GMV.
+**Correction:** An earlier version of this finding divided the top 15's item
+revenue (R$ 2.33M, delivered orders) by total payments (R$ 16.0M, which include
+freight) and reported 14.6% and 1.4%. Both sides now use item revenue, and the
+"long tail carries the business" conclusion is withdrawn.
+
+**Confidence:** High — computed over every seller, not inferred from the top 15.
 
 ---
 
@@ -139,24 +141,27 @@ small-sample artifact and is explicitly disregarded.
 
 ---
 
-## Finding 5 — Delivery speed collapses in the northern states
+## Finding 5 — Customers punish broken promises, not distance
 
 **What the data shows:** Against a national average of **12.6 days**, the
-slowest states are all in the north: **Roraima (RR) 29.4 days**, **Amapá (AP)
-27.2**, **Amazonas (AM) 26.4**, followed by Alagoas and Pará in the low 20s.
-The slowest state takes **2.3× the national average — 16.8 days longer.**
+slowest states are in the north: **Roraima (RR) 29.4 days**, **Amapá (AP)
+27.2**, **Amazonas (AM) 26.4**. But slow is not the same as late. Amapá and
+Amazonas arrive on time about **96%** of the time, because their delivery
+estimates are long, and both average above **4.1 stars**. Across the 27 states,
+the average review tracks the **on-time rate (r = 0.78)** more closely than
+**delivery days (r = −0.53)**. The broken promises sit where the volume is:
+**Rio de Janeiro** (12,698 orders, 86.5% on time, 3.90 stars) and the
+**Northeast** (Alagoas 76.1%, Maranhão 80.3% on time).
 
 ![15 slowest states by average delivery time](figures/slowest_states.png)
 
-**Why it matters:** The bottleneck is geographic and concentrated. These are
-remote Amazon-region states, far from the São Paulo-centric seller base, so
-the delay is a last-mile/distance problem, not a nationwide operational one.
-Combined with Finding 2 (lateness destroys reviews), these regions are where
-poor delivery is most likely dragging down satisfaction — and where targeted
-logistics investment would move the numbers most.
+**Why it matters:** Combined with Finding 2, the lever is keeping the delivery
+promise, not raw speed. Investment in northern logistics would shorten
+deliveries that customers already accept; fixing carriers in Rio de Janeiro
+and the Northeast would protect far more reviews.
 
-**Confidence:** High — clear regional pattern consistent with Brazil's
-geography and seller concentration.
+**Confidence:** Medium-High — the state-level pattern is clear, but the
+northern states are small samples (Amapá 68 orders, Amazonas 147).
 
 ---
 
@@ -169,11 +174,11 @@ delivery on *first* orders above all else — it is effectively the only
 retention mechanism the data supports. *Do not invest in loyalty/repeat-purchase
 programs* — at a 3.12% repeat rate, there is almost no repeat base to reward.
 
-**2. Fix the northern-state logistics gap.**
-Finding 5 isolates RR, AP, and AM (2–2.3× national delivery time). Pursue
-regional carrier partnerships or northern fulfilment/warehousing to shorten
-the last mile. This is the most geographically targeted, measurable win
-available.
+**2. Fix promise-keeping where the volume is.**
+Finding 5 shows Rio de Janeiro and the Northeast (AL, MA) miss the most
+delivery promises. Review carriers there and make delivery estimates
+realistic. The slow northern states mostly keep their promises already, so
+they are a lower priority.
 
 **3. Set and defend a delivery-time SLA tied to review risk.**
 Finding 2 shows each band of lateness costs ~1 star. Establish an internal
@@ -192,6 +197,5 @@ marketplace depends on.
   "late because far" (Finding 5) from "late because of seller/handling," which
   the pipeline-stage breakdown in `05_logistics_bottlenecks.sql` begins to
   address.
-- **Validate the seller long-tail** (Finding 3) by computing the full revenue
-  Gini/concentration curve, not just the top 15, before acting on the
-  "not concentrated" conclusion.
+- **Seller concentration** (Finding 3) is now validated with the full
+  concentration curve; see the live dashboard and `src/build_web_data.py`.

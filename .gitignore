@@ -12,3 +12,4 @@ env/
 
 # --- macOS System Garbage ---
 .DS_Store
+tableau/data/
